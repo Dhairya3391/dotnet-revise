@@ -1,281 +1,129 @@
 import { useState } from 'react'
 import './App.css'
 
-const API_BASE = 'http://localhost:5000/api'
+const API = 'http://localhost:5000/api'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('products')
-  const [response, setResponse] = useState(null)
-  const [loading, setLoading] = useState(false)
-
-  // Products state
+  const [tab, setTab] = useState('products')
+  const [res, setRes] = useState(null)
   const [products, setProducts] = useState([])
-  const [newProduct, setNewProduct] = useState({ name: '', price: '', category: '', stock: '' })
-
-  // Auth state
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' })
   const [user, setUser] = useState(null)
+  const [form, setForm] = useState({})
 
-  // Utility state
-  const [calcForm, setCalcForm] = useState({ a: '', b: '', operation: 'add' })
-
-  const showResponse = (data) => {
-    setResponse(JSON.stringify(data, null, 2))
-  }
-
-  // ============ PRODUCTS API ============
-  const fetchProducts = async () => {
-    setLoading(true)
+  const api = async (url, opts) => {
     try {
-      const res = await fetch(`${API_BASE}/products`)
-      const data = await res.json()
-      setProducts(data)
-      showResponse(data)
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
+      const r = await fetch(API + url, opts?.body ? {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(opts.body)
+      } : opts)
+      return await r.json()
+    } catch (e) { return { error: e.message } }
   }
 
-  const fetchProductById = async (id) => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/products/${id}`)
-      const data = await res.json()
-      showResponse(data)
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
+  const show = (data) => setRes(JSON.stringify(data, null, 2))
+
+  const call = async (url, opts, cb) => {
+    const data = await api(url, opts)
+    show(data)
+    cb?.(data)
   }
 
-  const createProduct = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newProduct.name,
-          price: parseFloat(newProduct.price),
-          category: newProduct.category,
-          stock: parseInt(newProduct.stock)
-        })
-      })
-      const data = await res.json()
-      showResponse(data)
-      setNewProduct({ name: '', price: '', category: '', stock: '' })
-      fetchProducts()
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
-  }
-
-  const deleteProduct = async (id) => {
-    setLoading(true)
-    try {
-      await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' })
-      showResponse({ message: `Product ${id} deleted` })
-      fetchProducts()
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
-  }
-
-  // ============ AUTH API ============
-  const login = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginForm)
-      })
-      const data = await res.json()
-      if (data.success) {
-        setUser(data.user)
-      }
-      showResponse(data)
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
-  }
-
-  const logout = () => {
-    setUser(null)
-    setLoginForm({ username: '', password: '' })
-    showResponse({ message: 'Logged out' })
-  }
-
-  // ============ UTILITY API ============
-  const healthCheck = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/utility/health`)
-      const data = await res.json()
-      showResponse(data)
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
-  }
-
-  const getServerTime = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/utility/time`)
-      const data = await res.json()
-      showResponse(data)
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
-  }
-
-  const getRandom = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/utility/random?min=1&max=100`)
-      const data = await res.json()
-      showResponse(data)
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
-  }
-
-  const calculate = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/utility/calculate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          a: parseFloat(calcForm.a),
-          b: parseFloat(calcForm.b),
-          operation: calcForm.operation
-        })
-      })
-      const data = await res.json()
-      showResponse(data)
-    } catch (err) {
-      showResponse({ error: err.message })
-    }
-    setLoading(false)
-  }
+  const loadProducts = () => call('/products', null, setProducts)
 
   return (
     <div className="app">
       <h1>🚀 API Practice App</h1>
       
       <div className="tabs">
-        <button className={activeTab === 'products' ? 'active' : ''} onClick={() => setActiveTab('products')}>Products</button>
-        <button className={activeTab === 'auth' ? 'active' : ''} onClick={() => setActiveTab('auth')}>Auth</button>
-        <button className={activeTab === 'utility' ? 'active' : ''} onClick={() => setActiveTab('utility')}>Utility</button>
+        {['products', 'auth', 'utility'].map(t => (
+          <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </button>
+        ))}
       </div>
 
       <div className="content">
-        {/* PRODUCTS TAB */}
-        {activeTab === 'products' && (
+        {tab === 'products' && (
           <div className="section">
             <h2>Products API</h2>
-            
             <div className="api-group">
-              <h3>GET Requests</h3>
-              <button onClick={fetchProducts}>GET /products (All)</button>
-              <button onClick={() => fetchProductById(1)}>GET /products/1</button>
-              <button onClick={() => fetchProductById(2)}>GET /products/2</button>
+              <button onClick={loadProducts}>GET All</button>
+              <button onClick={() => call('/products/1')}>GET #1</button>
+              <button onClick={() => call('/products/2')}>GET #2</button>
             </div>
-
             <div className="api-group">
-              <h3>POST Request - Create Product</h3>
+              <h3>Create Product</h3>
               <div className="form">
-                <input placeholder="Name" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
-                <input placeholder="Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} />
-                <input placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} />
-                <input placeholder="Stock" type="number" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} />
-                <button onClick={createProduct}>POST /products</button>
+                {['name', 'price', 'category', 'stock'].map(f => (
+                  <input key={f} placeholder={f} type={f === 'price' || f === 'stock' ? 'number' : 'text'}
+                    value={form[f] || ''} onChange={e => setForm({ ...form, [f]: e.target.value })} />
+                ))}
+                <button onClick={() => call('/products', {
+                  body: { ...form, price: +form.price, stock: +form.stock }
+                }, () => { setForm({}); loadProducts() })}>Create</button>
               </div>
             </div>
-
             {products.length > 0 && (
               <div className="api-group">
-                <h3>Products List (Click to DELETE)</h3>
-                <div className="list">
-                  {products.map(p => (
-                    <div key={p.id} className="list-item">
-                      <span>{p.name} - ${p.price} ({p.category})</span>
-                      <button className="delete" onClick={() => deleteProduct(p.id)}>Delete</button>
-                    </div>
-                  ))}
-                </div>
+                <h3>Products</h3>
+                {products.map(p => (
+                  <div key={p.id} className="list-item">
+                    <span>{p.name} - ${p.price}</span>
+                    <button className="delete" onClick={() => call(`/products/${p.id}`, { method: 'DELETE' }, loadProducts)}>×</button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
 
-        {/* AUTH TAB */}
-        {activeTab === 'auth' && (
+        {tab === 'auth' && (
           <div className="section">
             <h2>Auth API</h2>
-            
             {user ? (
               <div className="api-group">
-                <h3>Logged in as: {user.username}</h3>
-                <p>Email: {user.email}</p>
-                <button onClick={logout}>Logout</button>
+                <p>Logged in: <b>{user.username}</b> ({user.email})</p>
+                <button onClick={() => { setUser(null); show({ message: 'Logged out' }) }}>Logout</button>
               </div>
             ) : (
               <div className="api-group">
-                <h3>Login</h3>
-                <p className="hint">Try: admin/admin123, user/user123, or demo/demo</p>
+                <p className="hint">Try: admin/admin123</p>
                 <div className="form">
-                  <input placeholder="Username" value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
-                  <input placeholder="Password" type="password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
-                  <button onClick={login}>POST /auth/login</button>
+                  <input placeholder="Username" value={form.username || ''} onChange={e => setForm({ ...form, username: e.target.value })} />
+                  <input placeholder="Password" type="password" value={form.password || ''} onChange={e => setForm({ ...form, password: e.target.value })} />
+                  <button onClick={() => call('/auth/login', { body: form }, d => d.success && setUser(d.user))}>Login</button>
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* UTILITY TAB */}
-        {activeTab === 'utility' && (
+        {tab === 'utility' && (
           <div className="section">
             <h2>Utility API</h2>
-            
             <div className="api-group">
-              <h3>GET Requests</h3>
-              <button onClick={healthCheck}>GET /utility/health</button>
-              <button onClick={getServerTime}>GET /utility/time</button>
-              <button onClick={getRandom}>GET /utility/random</button>
+              <button onClick={() => call('/utility/health')}>Health</button>
+              <button onClick={() => call('/utility/time')}>Time</button>
+              <button onClick={() => call('/utility/random?min=1&max=100')}>Random</button>
             </div>
-
             <div className="api-group">
-              <h3>POST Request - Calculator</h3>
+              <h3>Calculator</h3>
               <div className="form">
-                <input placeholder="A" type="number" value={calcForm.a} onChange={e => setCalcForm({...calcForm, a: e.target.value})} />
-                <select value={calcForm.operation} onChange={e => setCalcForm({...calcForm, operation: e.target.value})}>
-                  <option value="add">Add</option>
-                  <option value="subtract">Subtract</option>
-                  <option value="multiply">Multiply</option>
-                  <option value="divide">Divide</option>
+                <input placeholder="A" type="number" value={form.a || ''} onChange={e => setForm({ ...form, a: e.target.value })} />
+                <select value={form.op || 'add'} onChange={e => setForm({ ...form, op: e.target.value })}>
+                  {['add', 'subtract', 'multiply', 'divide'].map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
-                <input placeholder="B" type="number" value={calcForm.b} onChange={e => setCalcForm({...calcForm, b: e.target.value})} />
-                <button onClick={calculate}>POST /utility/calculate</button>
+                <input placeholder="B" type="number" value={form.b || ''} onChange={e => setForm({ ...form, b: e.target.value })} />
+                <button onClick={() => call('/utility/calculate', { body: { a: +form.a, b: +form.b, operation: form.op || 'add' } })}>Calculate</button>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Response Panel */}
       <div className="response-panel">
-        <h3>API Response {loading && '⏳'}</h3>
-        <pre>{response || 'Click a button to see the API response'}</pre>
+        <h3>Response</h3>
+        <pre>{res || 'Click a button to see response'}</pre>
       </div>
     </div>
   )

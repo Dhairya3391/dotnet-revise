@@ -36,3 +36,4 @@
 /Users/dhairya/Development/testlearning/api-practice/PracticeApi/obj/Debug/net10.0/PracticeApi.pdb
 /Users/dhairya/Development/testlearning/api-practice/PracticeApi/obj/Debug/net10.0/PracticeApi.genruntimeconfig.cache
 /Users/dhairya/Development/testlearning/api-practice/PracticeApi/obj/Debug/net10.0/ref/PracticeApi.dll
+/Users/dhairya/Development/testlearning/api-practice/PracticeApi/obj/Debug/net10.0/PracticeApi.sourcelink.json
