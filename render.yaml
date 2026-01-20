@@ -2,9 +2,12 @@ services:
   - type: web
     name: practice-api
     env: dotnet
+    repo: https://github.com/Dhairya3391/dotnet-revise
+    branch: main
     rootDir: PracticeApi
     buildCommand: dotnet publish -c Release -o out
     startCommand: dotnet out/PracticeApi.dll
+    plan: free
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
