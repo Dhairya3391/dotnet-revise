@@ -1,0 +1,47 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Output
+out/
+*.dll
+*.pdb
+*.cache
+*.json
+
+# Allow specific config files
+!appsettings.json
+!appsettings.Development.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!render.yaml
+!**/Properties/*.json
+
+# Dependencies
+node_modules/

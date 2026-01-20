@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: practice-api
+    env: dotnet
+    rootDir: PracticeApi
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: dotnet out/PracticeApi.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:$PORT
