@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import './App.css'
 
-const API = 'http://localhost:5000/api'
+const API = 'http://10.120.22.165:5178/api'
+
 
 function App() {
   const [tab, setTab] = useState('products')
